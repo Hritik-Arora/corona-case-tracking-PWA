@@ -58,7 +58,7 @@ function App() {
             {
               Object.keys(covidData).map((stateData, index) => (
                 <tr>
-                  <td>{index}</td>
+                  <td>{index + 1}</td>
                   <td>{covidData[stateData].state}</td>
                   <td>{covidData[stateData].activeCases}</td>
                   <td>{covidData[stateData].cured}</td>
