@@ -15,7 +15,7 @@ function App() {
   const [covidData, setCovidData] = useState<ICovidData>({});
 
   const getAndSetDataInState = useCallback(() => {
-    fetch('http://localhost:4000/covidData')
+    fetch('https://web-scraper-corona-cases.herokuapp.com/covidData')
     .then(res => res.json())
     .then(
       (result) => {
