@@ -11,8 +11,15 @@ interface ICovidData {
     deaths: string, 
   }
 }
+
+interface ITotalCasesData {
+  totalActiveCases: number;
+  totalCured: number;
+  totalDeaths: number;
+}
 function App() {
   const [covidData, setCovidData] = useState<ICovidData>({});
+  const [totalcasesData, setTotalCasesData] = useState<ITotalCasesData | null>(null);
 
   const getAndSetDataInState = useCallback(() => {
     fetch('https://web-scraper-corona-cases.herokuapp.com/covidData')
@@ -37,6 +44,22 @@ function App() {
       clearInterval(interval);
     }
   }, [getAndSetDataInState]);
+
+  useEffect(() => {
+    let totalActiveCases = 0;
+    let totalCured = 0;
+    let totalDeaths = 0;
+    Object.keys(covidData).forEach((stateData) => {
+      totalActiveCases += +covidData[stateData].activeCases;
+      totalCured += +covidData[stateData].cured;
+      totalDeaths += +covidData[stateData].deaths;
+    });
+    setTotalCasesData({
+      totalActiveCases,
+      totalCured,
+      totalDeaths,
+    });
+  }, [covidData]);
 
   return (
     <Container>
@@ -65,6 +88,16 @@ function App() {
                   <td>{covidData[stateData].deaths}</td>
                 </tr>
               ))
+            }
+            {
+              totalcasesData ? (
+                <tr>
+                  <th colSpan={2}>Total#</th>
+                  <th>{totalcasesData.totalActiveCases}</th>
+                  <th>{totalcasesData.totalCured}</th>
+                  <th>{totalcasesData.totalDeaths}</th>
+                </tr>
+              ) : null
             }
           </tbody>
         </Table>
