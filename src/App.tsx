@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import './App.css';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import { Container, Row, Table } from 'react-bootstrap';
@@ -18,6 +18,7 @@ interface ITotalCasesData {
   totalDeaths: number;
 }
 function App() {
+  const isNetworkDataReceived = useRef(false);
   const [covidData, setCovidData] = useState<ICovidData>({});
   const [totalcasesData, setTotalCasesData] = useState<ITotalCasesData | null>(null);
 
@@ -27,6 +28,7 @@ function App() {
     .then(
       (result) => {
         setCovidData(result.data);
+        isNetworkDataReceived.current = true;
       },
       (error) => {
         console.log('Error from API call', error);
@@ -35,8 +37,20 @@ function App() {
   }, []);
 
   useEffect(() => {
-    // Initial API call to get the data
-    getAndSetDataInState();
+    // fetch cached data
+    caches.match('https://web-scraper-corona-cases.herokuapp.com/covidData').then(function(response) {
+      if (!response) throw Error("No data");
+      return response.json();
+    }).then(function(data) {
+      // don't overwrite newer network data
+      if (!isNetworkDataReceived.current) {
+        setCovidData(data.data);
+      }
+    }).catch(function() {
+      // we didn't get cached data, the network is our last hope:
+      getAndSetDataInState();
+    });
+
     // Making api call in intervals to keep updating the data
     let interval = setInterval(getAndSetDataInState, 600000);
     return () => {
@@ -80,7 +94,7 @@ function App() {
           <tbody>
             {
               Object.keys(covidData).map((stateData, index) => (
-                <tr>
+                <tr key={stateData}>
                   <td>{index + 1}</td>
                   <td>{covidData[stateData].state}</td>
                   <td>{covidData[stateData].activeCases}</td>
